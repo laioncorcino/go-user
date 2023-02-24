@@ -1,10 +1,10 @@
-package error
+package rest_error
 
 import "net/http"
 
 type StandardError struct {
 	Message string  `json:"message"`
-	Err     string  `json:"err"`
+	Err     string  `json:"error"`
 	Code    int     `json:"code"`
 	Causes  []Cause `json:"causes,omitempty"`
 }

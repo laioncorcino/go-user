@@ -5,7 +5,13 @@ import (
 	"github.com/laioncorcino/go-user/config/logger"
 	"github.com/laioncorcino/go-user/json"
 	"github.com/laioncorcino/go-user/service"
+	"github.com/laioncorcino/go-user/validator"
 	"go.uber.org/zap"
+	"net/http"
+)
+
+var (
+	userService service.IUserService
 )
 
 func FindById(c *gin.Context) {
@@ -22,10 +28,22 @@ func Create(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		logger.Error("Error trying to marshal object", err, zap.String("journey", "createUser"))
-		restErr := service.ValidateUserError(err)
+		restErr := validator.ValidateUserError(err)
 		c.JSON(restErr.Code, restErr)
 		return
 	}
+
+	user, err := userService.CreateUser(req)
+	if err != nil {
+		logger.Error("Error trying to call CreateUser service", err, zap.String("journey", "createUser"))
+		c.JSON(err.Code, err)
+		return
+	}
+
+	logger.Info("CreateUser controller executed successfully",
+		zap.String("userId", user.ID), zap.String("journey", "createUser"))
+
+	c.JSON(http.StatusOK, user)
 }
 
 func Update(c *gin.Context) {
